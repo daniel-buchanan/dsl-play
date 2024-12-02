@@ -4,26 +4,38 @@ using System.Threading;
 using System.Threading.Tasks;
 using dsl_play.common;
 using dsl_play.language.Descriptors;
+using dsl_play.language.Json.Converters;
 using dsl_play.models;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace dsl_play.language.Conditions
 {
-    public abstract class Condition : ICondition
+    public class Condition : ICondition
     {
-        public static ICondition<TModel> Create<TModel>(
+        public static Condition<TModel> Create<TModel>(
             IPropertyDescriptor<TModel> property,
             Expression<Func<TModel, bool>> constraint)
             where TModel : class, IDataModel
             => new Condition<TModel>(property, constraint);
         
         
-        public abstract bool IsMet(object model);
-        public abstract Task<bool> IsMetAsync(object model, CancellationToken cancellationToken = default);
+        public virtual bool IsMet(object model) => IsMetAsync(model).Await();
+        public virtual Task<bool> IsMetAsync(object model, CancellationToken cancellationToken = default) => Task.FromResult(false);
+        
+        public PropertyDescriptor Property { get; }
     }
 
-    public class Condition<TModel> : ICondition<TModel> 
+    public class Condition<TModel> : Condition, ICondition<TModel> 
         where TModel : class, IDataModel
     {
+        [JsonConstructor]
+        private Condition(PropertyDescriptor<TModel> property, Expression<Func<TModel, bool>> constraint)
+        {
+            Property = property;
+            Constraint = constraint;
+        }
+        
         protected internal Condition(
             IPropertyDescriptor<TModel> property,
             Expression<Func<TModel, bool>> constraint)
@@ -32,15 +44,14 @@ namespace dsl_play.language.Conditions
             Constraint = constraint;
         }
         
-        public IPropertyDescriptor<TModel> Property { get; }
+        public new IPropertyDescriptor<TModel> Property { get; }
         
+        [JsonConverter(typeof(ExpressionConverter))]
         public Expression<Func<TModel, bool>> Constraint { get; }
         
         public bool IsMet(TModel model) => IsMetAsync(model).Await();
 
-        public bool IsMet(object model) => IsMetAsync(model).Await();
-
-        public Task<bool> IsMetAsync(object model, CancellationToken cancellationToken = default)
+        public new Task<bool> IsMetAsync(object model, CancellationToken cancellationToken = default)
         {
             var getValue = Property.Of.Compile();
             var matchConstraint = Constraint.Compile();

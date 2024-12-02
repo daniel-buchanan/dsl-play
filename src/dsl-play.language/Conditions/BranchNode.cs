@@ -1,10 +1,15 @@
+using System.Linq;
+using dsl_play.language.Json.Converters;
+using Newtonsoft.Json;
+
 namespace dsl_play.language.Conditions;
 
+[JsonConverter(typeof(TreeNodeConverter))]
 public class BranchNode(BranchOperator op) : 
-    TreeNode(), IBranchNode
+    TreeNode<BranchNode>(TreeNodeType.BranchNode), IBranchNode
 {
-    public static ITreeNode With(BranchOperator op)
-        => new BranchNode(op);
+    public static BranchNode With(BranchOperator op)
+        => new (op);
     
     public BranchOperator Operator { get; } = op;
 
@@ -15,17 +20,9 @@ public class BranchNode(BranchOperator op) :
             : AllMetOr(model);
     }
 
-    private bool AllMetOr(object model)
-    {
-        var met = false;
-        foreach (var c in NodeChildren) met |= c.AllMet(model);
-        return met;
-    }
+    private bool AllMetOr(object model) 
+        => NodeChildren.Aggregate(false, (current, c) => current || c.AllMet(model));
 
-    private bool AllMetAnd(object model)
-    {
-        var met = true;
-        foreach (var c in NodeChildren) met &= c.AllMet(model);
-        return met;
-    }
+    private bool AllMetAnd(object model) 
+        => NodeChildren.Aggregate(true, (current, c) => current && c.AllMet(model));
 }

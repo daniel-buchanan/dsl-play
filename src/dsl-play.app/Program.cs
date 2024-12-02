@@ -1,7 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using dsl_play.language;
-using dsl_play.language.Actions;
 using dsl_play.language.Conditions;
 using dsl_play.language.Descriptors;
 using dsl_play.models;
@@ -9,7 +8,7 @@ using Newtonsoft.Json;
 
 Console.WriteLine("Hello, World!");
 
-var statement = Statement.With(RootNode.Create(BranchOperator.And)
+var statement = Statement.With(RootNode.Create()
     .AddChildren(
         BranchNode.With(BranchOperator.Or)
         .AddChildren(
@@ -25,11 +24,17 @@ var statement = Statement.With(RootNode.Create(BranchOperator.And)
                 )
             )
         )
-    ) as IRootNode, 
+    ) as RootNode, 
     [
         //new SetPropertyAction<TestModel>("stuff", PropertyDescriptor.Create<TestModel>(m => m.Name))
     ]
 );
 
+var l = LeafNode.With(
+        Condition.Create<TestModel>(
+            PropertyDescriptor.Create<TestModel>(m => m.Model.Age), 
+            m => m.Age < 42));
+
 var json = JsonConvert.SerializeObject(statement);
 Console.WriteLine(json);
+var obj = JsonConvert.DeserializeObject<RootNode>(json);

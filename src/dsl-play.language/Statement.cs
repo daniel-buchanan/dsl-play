@@ -9,17 +9,17 @@ using dsl_play.models;
 
 namespace dsl_play.language
 {
-    public class Statement(IRootNode conditions, IEnumerable<IModelAction> actions) : IStatement
+    public class Statement(RootNode conditions, IEnumerable<ModelAction> actions) : IStatement
     {
-        public static IStatement With(IRootNode conditions, IEnumerable<IModelAction> actions)
+        public static Statement With(RootNode conditions, IEnumerable<ModelAction> actions)
             => new Statement(conditions, actions);
 
-        public static IStatement<TModel> With<TModel>(IRootNode conditions, IEnumerable<IModelAction<TModel>> actions) 
+        public static Statement<TModel> With<TModel>(RootNode conditions, IEnumerable<ModelAction<TModel>> actions) 
             where TModel : class, IDataModel 
             => new Statement<TModel>(conditions, actions);
 
-        public IRootNode Conditions { get; } = conditions;
-        public IEnumerable<IModelAction> Actions { get; } = actions;
+        public RootNode Conditions { get; } = conditions;
+        public IEnumerable<ModelAction> Actions { get; } = actions;
 
         public object Apply(object model)
             => ApplyAsync(model).Await();
@@ -36,11 +36,11 @@ namespace dsl_play.language
         }
     }
 
-    public class Statement<TModel>(IRootNode conditions, IEnumerable<IModelAction<TModel>> actions) : 
+    public class Statement<TModel>(RootNode conditions, IEnumerable<ModelAction<TModel>> actions) : 
         Statement(conditions, actions), IStatement<TModel> 
         where TModel : class, IDataModel
     {
-        public new IEnumerable<IModelAction<TModel>> Actions { get; } = actions.ToList();
+        public new IEnumerable<ModelAction<TModel>> Actions { get; } = actions.ToList();
         
         public TModel Apply(TModel model)
             => ApplyAsync(model).Await();

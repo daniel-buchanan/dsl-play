@@ -1,19 +1,20 @@
+using dsl_play.language.Json.Converters;
+using Newtonsoft.Json;
+
 namespace dsl_play.language.Conditions;
 
-public class RootNode(BranchOperator op) : BranchNode(op), IRootNode
+[JsonConverter(typeof(TreeNodeConverter))]
+public class RootNode : TreeNode<RootNode>, IRootNode
 {
-    public static ITreeNode Create(BranchOperator op)
-        => new RootNode(op);
+    [JsonConstructor]
+    private RootNode() : base(TreeNodeType.RootNode) { }
 
-    public new IRootNode AddChild(ITreeNode child)
-    {
-        base.AddChild(child);
-        return this;
-    }
-
-    public new IRootNode AddChildren(params ITreeNode[] children)
-    {
-        base.AddChildren(children);
-        return this;
-    }
+    private RootNode(LeafNode condition) : 
+        this() => AddChild(condition);
+    
+    public static RootNode Create()
+        => new();
+    
+    public static RootNode Create(LeafNode condition)
+        => new(condition);
 }

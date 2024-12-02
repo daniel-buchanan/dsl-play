@@ -1,10 +1,12 @@
 using System;
 using System.Linq.Expressions;
+using dsl_play.language.Json.Converters;
 using dsl_play.models;
+using Newtonsoft.Json;
 
 namespace dsl_play.language.Descriptors
 {
-    public static class PropertyDescriptor
+    public class PropertyDescriptor : IPropertyDescriptor
     {
         public static IPropertyDescriptor<TModel> Create<TModel>(
             Expression<Func<TModel, object>> expression) 
@@ -15,24 +17,36 @@ namespace dsl_play.language.Descriptors
             Expression<Func<TModel, TValue>> expression) 
             where TModel : IDataModel 
             => new PropertyDescriptor<TModel, TValue>(expression);
+
+        public PropertyDescriptor() { }
+
+        public PropertyDescriptor(string name, string displayName)
+        {
+            Name = name;
+            DisplayName = displayName;
+        }
+        
+        public string DisplayName { get; protected set; }
+        public string Name { get; protected set; }
     }
     
-    public class PropertyDescriptor<TModel> : IPropertyDescriptor<TModel> where TModel : IDataModel
+    public class PropertyDescriptor<TModel> : 
+        PropertyDescriptor, IPropertyDescriptor<TModel> 
+        where TModel : IDataModel
     {
         protected internal PropertyDescriptor(Expression<Func<TModel, object>> expression)
         {
             Of = expression;
+            Name = GetName(Of);
+            DisplayName = GetName(Of);
         }
-
-        public string DisplayName => GetName(Of);
-
-        public string Name => GetName(Of);
         
         public Type Type => typeof(TModel);
         
+        [JsonConverter(typeof(ExpressionConverter))]
         public Expression<Func<TModel, object>> Of { get; }
 
-        protected string GetName(Expression<Func<TModel, object>> expression)
+        private static string GetName(Expression<Func<TModel, object>> expression)
         {
             var existingProp = string.Empty;
             

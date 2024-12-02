@@ -10,8 +10,8 @@ namespace dsl_play.language
 {
     public interface IStatement
     {
-        IRootNode Conditions { get; }
-        IEnumerable<IModelAction> Actions { get; }
+        RootNode Conditions { get; }
+        IEnumerable<ModelAction> Actions { get; }
         
         object Apply(object model);
         Task<object> ApplyAsync(object model, CancellationToken cancellationToken = default);
@@ -20,7 +20,7 @@ namespace dsl_play.language
     public interface IStatement<TModel> : IStatement 
         where TModel : class, IDataModel
     {
-        new IEnumerable<IModelAction<TModel>> Actions { get; }
+        new IEnumerable<ModelAction<TModel>> Actions { get; }
         TModel Apply(TModel model);
         Task<TModel> ApplyAsync(TModel model, CancellationToken cancellationToken = default);
     }

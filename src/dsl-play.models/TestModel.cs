@@ -5,5 +5,6 @@ namespace dsl_play.models
         public int Id { get; set; }
         public string Name { get; set; }
         public int Age { get; set; }
+        public SubModel Model { get; set; }
     }
 }

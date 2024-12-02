@@ -11,12 +11,14 @@ namespace dsl_play.language.Conditions
     {
         bool IsMet(object model);
         Task<bool> IsMetAsync(object model, CancellationToken cancellationToken = default);
+        
+        PropertyDescriptor Property { get; }
     }
 
     public interface ICondition<TModel> : ICondition 
         where TModel : IDataModel
     {
-        IPropertyDescriptor<TModel> Property { get; }
+        new IPropertyDescriptor<TModel> Property { get; }
         
         Expression<Func<TModel, bool>> Constraint { get; }
         

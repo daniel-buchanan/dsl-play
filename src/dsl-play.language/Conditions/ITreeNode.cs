@@ -4,10 +4,13 @@ namespace dsl_play.language.Conditions;
 
 public interface ITreeNode
 {
-    ITreeNode Parent { get; }
-    IEnumerable<ITreeNode> Children { get; }
-    ITreeNode AddChild(ITreeNode child);
-    ITreeNode AddChildren(params ITreeNode[] children);
+    IEnumerable<TreeNode> Children { get; }
     bool AllMet(object model);
-    void SetParent(ITreeNode parent);
+}
+
+public interface ITreeNode<out TNodeType> : ITreeNode
+    where TNodeType : ITreeNode
+{
+    TNodeType AddChild(TreeNode child);
+    TNodeType AddChildren(params TreeNode[] children);
 }
